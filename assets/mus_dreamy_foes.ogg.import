@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/mus_dreamy_foes.ogg-40163a95d9127a98db2a222cce42a4dd.oggstr"
+
+[deps]
+
+source_file="res://assets/mus_dreamy_foes.ogg"
+dest_files=[ "res://.import/mus_dreamy_foes.ogg-40163a95d9127a98db2a222cce42a4dd.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0

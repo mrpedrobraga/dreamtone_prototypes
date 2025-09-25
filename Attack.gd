@@ -7,15 +7,16 @@ export var indicator_texture: Texture
 
 enum AttackType {
 	HORIZONTAL_SLIDER,
-	VERTICAL_SLIDER,
 	SHRINKING_CIRCLE
 }
 export(AttackType) var attack_mode
 
 # -- the action associated with this target
 
+export var active = false
 export var action = "B"
 export(float, 0.0, 1.0) var time_offset = 0.0
+export(float, 0.0, 1.0) var angle_offset = 0.0
 
 signal hit
 signal miss
@@ -46,35 +47,41 @@ func _begin():
 
 func _process(delta):
 	time_since_beginning += delta
-	timer -= delta
 	
-	# You'll hit your attack if you do so when the indicator is inside the hitbox.
-	hitting_window = $Hitbox.get_rect().has_point(indicator_position)
-	
-	if attack_mode == AttackType.SHRINKING_CIRCLE:
-		# Auto attack when the shrinking circle reaches its target size.
-		if timer < 0 or Input.is_action_just_pressed(action):
+	if active:
+		timer -= delta
+		
+		# You'll hit your attack if you do so when the indicator is inside the hitbox.
+		_process_hitbox_check()
+		
+		if attack_mode == AttackType.SHRINKING_CIRCLE:
+			# Auto attack when the shrinking circle reaches its target size.
+			if timer < 0 or Input.is_action_just_pressed(action):
+				_attack()
+				_begin()
+		# Otherwise, wait for input to attack.
+		elif Input.is_action_just_pressed(action):
 			_attack()
-			_begin()
-	# Otherwise, wait for input to attack.
-	elif Input.is_action_just_pressed(action):
-		_attack()
 	
 	#--- LINEAR ---#
 	match attack_mode:
 		AttackType.HORIZONTAL_SLIDER:
-			var angle = 0
-			indicator_position = Vector2(32 * cos(time_since_beginning * 5 + time_offset * TAU), 4 * sin(time_since_beginning * 3)).rotated(angle)
-			indicator_position += rect_size / 2
-		AttackType.VERTICAL_SLIDER:
-			var angle = TAU / 4
-			indicator_position = Vector2(32 * cos(time_since_beginning * 5 + time_offset * TAU), 4 * sin(time_since_beginning * 3)).rotated(angle)
+			var speed = 3
+			indicator_position = Vector2(
+				24 * cos(time_since_beginning * speed + time_offset * TAU),
+				2 * sin(time_since_beginning * speed * 0.6)
+			).rotated(angle_offset * TAU)
 			indicator_position += rect_size / 2
 		AttackType.SHRINKING_CIRCLE:
 			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
 			indicator_position += vector
 	
 	update()
+
+func _process_hitbox_check():
+	hitting_window = false
+	for hitbox in get_tree().get_nodes_in_group("Hitbox"):
+		hitting_window = hitting_window or hitbox.get_rect().has_point(indicator_position)
 
 func _attack():
 		if hitting_window:
@@ -93,9 +100,12 @@ func _draw_indicator(where: Vector2):
 	var _indicator_size = Vector2(16, 16)
 	var _indicator_color = Color.white
 	
-	# Making sure to draw it centered!
-	if hitting_window:
-		_indicator_color = Color.red
+	if active:
+		if hitting_window:
+			_indicator_color = Color.red
+	else:
+		_indicator_color.a = 0.3
+	
 	draw_texture_rect(indicator_texture,  Rect2(where - _indicator_size / 2, _indicator_size), false, _indicator_color)
 	
 	if attack_mode == AttackType.SHRINKING_CIRCLE:
