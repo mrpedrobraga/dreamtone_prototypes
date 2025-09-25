@@ -72,6 +72,7 @@ margin_top = 24.0
 margin_right = 154.0
 margin_bottom = 79.0
 script = ExtResource( 3 )
+attack_mode = 2
 
 [node name="Hitbox" type="Control" parent="Attack"]
 margin_left = 27.0
@@ -80,3 +81,4 @@ margin_right = 48.0
 margin_bottom = 38.0
 
 [connection signal="hit" from="Attack" to="." method="_on_Attack_hit"]
+[connection signal="miss" from="Attack" to="." method="_on_Attack_miss"]

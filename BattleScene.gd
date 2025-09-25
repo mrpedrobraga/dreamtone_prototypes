@@ -11,3 +11,7 @@ func _freeze_frame():
 	$Timer.start()
 	yield($Timer, "timeout")
 	get_tree().paused = false
+
+
+func _on_Attack_miss() -> void:
+	print("Oopsie!")

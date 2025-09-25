@@ -13,16 +13,36 @@ signal hit
 signal miss
 
 var time_offset = 0
+var timer = 1
+var timer_max = 1
 var horizontal_offset = 0
 var vertical_offset = 0
 
 var hitting_window = false
 
+func _ready() -> void:
+	_begin()
+
 func _begin():
 	time_offset = 0
+	timer = timer_max
+	
+	if attack_mode == AttackType.SHRINKING_CIRCLE:
+		horizontal_offset = (randf() - 0.5) * rect_size.x
+		vertical_offset = (randf() - 0.5) * rect_size.y
 
 func _process(delta):
 	time_offset += delta
+	timer -= delta
+	
+	if timer < 0:
+		if attack_mode == AttackType.SHRINKING_CIRCLE:
+			_attack()
+		_begin()
+	elif Input.is_action_just_pressed('OK'):
+		if _attack():
+			if attack_mode == AttackType.SHRINKING_CIRCLE:
+				_begin()
 	
 	hitting_window = false
 	
@@ -40,35 +60,39 @@ func _process(delta):
 			
 			if $Hitbox.get_rect().has_point(Vector2(horizontal_offset, vertical_offset)+rect_size/2):
 				hitting_window = true
+		AttackType.SHRINKING_CIRCLE:
+			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
+			horizontal_offset += vector.x
+			vertical_offset += vector.y
+			
+			if $Hitbox.get_rect().has_point(Vector2(horizontal_offset, vertical_offset)+rect_size/2):
+				hitting_window = true
 	
 	update()
-	
-	_handle_attack()
 
-func _handle_attack():
-	if Input.is_action_just_pressed('OK'):
+func _attack():
 		if hitting_window:
 			emit_signal('hit')
+			return true
 		else:
 			emit_signal('miss')
+			return false
 
 
 func _draw() -> void:
 	var center = rect_size/2
 	
-	match attack_mode:
-		AttackType.HORIZONTAL_SLIDER:
-			_draw_indicator(
-				center +
-				Vector2.RIGHT * horizontal_offset +
-				Vector2.UP * vertical_offset
-			)
-		AttackType.VERTICAL_SLIDER:
-			_draw_indicator(
-				center +
-				Vector2.RIGHT * horizontal_offset +
-				Vector2.UP * vertical_offset
-			)
+	var indicator_position = center +\
+		Vector2.RIGHT * horizontal_offset +\
+		Vector2.DOWN * vertical_offset
+	
+	_draw_indicator(
+		indicator_position
+	)
+	
+	if attack_mode == AttackType.SHRINKING_CIRCLE:
+		var radius = 32 * (timer_max - (time_offset - floor(time_offset)))
+		draw_arc(indicator_position, radius, 0, TAU, 64, Color.turquoise, 1.5)
 
 func _draw_indicator(where: Vector2):
 	var size = Vector2(16, 16)
