@@ -33,11 +33,9 @@ var indicator_position: Vector2
 # Otherwise, it *may* miss.
 var hitting_window = false
 
-func _ready() -> void:
-	_begin()
-
 # Resets the attack
-func _begin():
+func start():
+	active = true
 	time_since_beginning = 0
 	timer = timer_max
 	
@@ -45,11 +43,13 @@ func _begin():
 		indicator_position.x = (randf() - 0.5) * rect_size.x
 		indicator_position.y = (randf() - 0.5) * rect_size.y
 
+func stop():
+	active = false
+
 func _process(delta):
-	time_since_beginning += delta
-	
 	if active:
 		timer -= delta
+		time_since_beginning += delta
 		
 		# You'll hit your attack if you do so when the indicator is inside the hitbox.
 		_process_hitbox_check()
@@ -58,20 +58,24 @@ func _process(delta):
 			# Auto attack when the shrinking circle reaches its target size.
 			if timer < 0 or Input.is_action_just_pressed(action):
 				_attack()
-				_begin()
+				start()
 		# Otherwise, wait for input to attack.
 		elif Input.is_action_just_pressed(action):
-			_attack()
+			var result = _attack()
+			if result:
+				stop()
 	
 	#--- LINEAR ---#
 	match attack_mode:
 		AttackType.HORIZONTAL_SLIDER:
-			var speed = 3
+			var speed = 2
 			indicator_position = Vector2(
-				24 * cos(time_since_beginning * speed + time_offset * TAU),
-				2 * sin(time_since_beginning * speed * 0.6)
-			).rotated(angle_offset * TAU)
+				128.0 * (1.0 - time_since_beginning),
+				2 * sin(time_since_beginning * 8)
+			)
 			indicator_position += rect_size / 2
+			indicator_position = indicator_position.rotated(time_since_beginning)
+			
 		AttackType.SHRINKING_CIRCLE:
 			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
 			indicator_position += vector
@@ -97,14 +101,11 @@ func _draw() -> void:
 	)
 
 func _draw_indicator(where: Vector2):
+	if not active:
+		return
+	
 	var _indicator_size = Vector2(16, 16)
 	var _indicator_color = Color.white
-	
-	if active:
-		if hitting_window:
-			_indicator_color = Color.red
-	else:
-		_indicator_color.a = 0.3
 	
 	draw_texture_rect(indicator_texture,  Rect2(where - _indicator_size / 2, _indicator_size), false, _indicator_color)
 	

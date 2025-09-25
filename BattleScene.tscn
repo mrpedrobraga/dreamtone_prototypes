@@ -31,7 +31,7 @@ void fragment() {
 [sub_resource type="ShaderMaterial" id=2]
 shader = SubResource( 1 )
 
-[node name="Node2D" type="Control"]
+[node name="Battle" type="Control"]
 pause_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -172,14 +172,13 @@ margin_bottom = 40.0
 
 [node name="AttackNathan" type="Control" parent="Attacks"]
 pause_mode = 1
-margin_left = 27.0
-margin_top = 27.0
-margin_right = 64.0
-margin_bottom = 50.0
+margin_left = 80.0
+margin_top = 26.0
+margin_right = 117.0
+margin_bottom = 49.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 10 )
-active = true
-angle_offset = 0.25
+action = "A"
 
 [node name="AttackNeil" type="Control" parent="Attacks"]
 pause_mode = 1
@@ -190,8 +189,6 @@ margin_bottom = 47.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 11 )
 action = "A"
-time_offset = 0.125
-angle_offset = 0.25
 
 [node name="AttackJenny" type="Control" parent="Attacks"]
 pause_mode = 1
@@ -201,21 +198,17 @@ margin_right = 166.0
 margin_bottom = 48.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 12 )
-action = "X"
-time_offset = 0.5
-angle_offset = 0.25
+action = "A"
 
 [node name="AttackDarell" type="Control" parent="Attacks"]
 pause_mode = 1
-margin_left = 181.0
+margin_left = 126.0
 margin_top = 24.0
-margin_right = 218.0
+margin_right = 163.0
 margin_bottom = 54.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 13 )
-action = "Y"
-time_offset = 0.75
-angle_offset = 0.25
+action = "A"
 
 [connection signal="hit" from="Attacks/AttackNathan" to="." method="_on_Attack_hit"]
 [connection signal="miss" from="Attacks/AttackNathan" to="." method="_on_Attack_miss"]
