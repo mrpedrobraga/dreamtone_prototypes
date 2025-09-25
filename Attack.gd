@@ -70,11 +70,11 @@ func _process(delta):
 		AttackType.HORIZONTAL_SLIDER:
 			var speed = 2
 			indicator_position = Vector2(
-				128.0 * (1.0 - time_since_beginning),
+				32.0 * (1.0 - time_since_beginning),
 				2 * sin(time_since_beginning * 8)
 			)
 			indicator_position += rect_size / 2
-			indicator_position = indicator_position.rotated(time_since_beginning)
+			indicator_position = indicator_position
 			
 		AttackType.SHRINKING_CIRCLE:
 			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
