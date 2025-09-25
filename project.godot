@@ -11,6 +11,7 @@ config_version=4
 [application]
 
 config/name="Dreamtone 2"
+run/main_scene="res://BattleScene.tscn"
 config/icon="res://icon.png"
 
 [display]
@@ -19,6 +20,16 @@ window/size/width=240
 window/size/height=135
 window/size/test_width=960
 window/size/test_height=540
+window/stretch/mode="2d"
+window/stretch/aspect="keep_width"
+
+[input]
+
+OK={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":90,"unicode":0,"echo":false,"script":null)
+ ]
+}
 
 [physics]
 
