@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://assets/base.png" type="Texture" id=1]
 [ext_resource path="res://assets/enemie_ratmare.png" type="Texture" id=2]
@@ -9,6 +9,25 @@
 [ext_resource path="res://BattleScene.gd" type="Script" id=7]
 [ext_resource path="res://assets/snd_hit.wav" type="AudioStream" id=8]
 [ext_resource path="res://BAM.gd" type="Script" id=9]
+[ext_resource path="res://assets/ball.png" type="Texture" id=10]
+[ext_resource path="res://assets/punch.png" type="Texture" id=11]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+void fragment() {
+	vec2 uv = UV;
+	uv -= 0.5;
+	
+	uv.x *= 1.05 + 0.03 * sin(TIME * 4.0);
+	uv.y *= 1.05 + 0.03 * cos(TIME * 4.0);
+	
+	uv += 0.5;
+	COLOR = texture(TEXTURE, uv);
+}"
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
 
 [node name="Node2D" type="Control"]
 pause_mode = 2
@@ -58,6 +77,7 @@ expand = true
 stretch_mode = 6
 
 [node name="EnemieRatmare" type="TextureRect" parent="."]
+material = SubResource( 2 )
 margin_left = 90.0
 margin_top = 24.0
 margin_right = 153.0
@@ -72,7 +92,7 @@ margin_top = 24.0
 margin_right = 154.0
 margin_bottom = 79.0
 script = ExtResource( 3 )
-attack_mode = 2
+indicator_texture = ExtResource( 10 )
 
 [node name="Hitbox" type="Control" parent="Attack"]
 margin_left = 27.0
@@ -80,5 +100,25 @@ margin_top = 20.0
 margin_right = 48.0
 margin_bottom = 38.0
 
+[node name="Attack2" type="Control" parent="."]
+pause_mode = 1
+margin_left = 86.0
+margin_top = 24.0
+margin_right = 154.0
+margin_bottom = 79.0
+script = ExtResource( 3 )
+indicator_texture = ExtResource( 11 )
+attack_mode = 1
+action = "A"
+time_offset = 0.25
+
+[node name="Hitbox" type="Control" parent="Attack2"]
+margin_left = 27.0
+margin_top = 20.0
+margin_right = 48.0
+margin_bottom = 38.0
+
 [connection signal="hit" from="Attack" to="." method="_on_Attack_hit"]
 [connection signal="miss" from="Attack" to="." method="_on_Attack_miss"]
+[connection signal="hit" from="Attack2" to="." method="_on_Attack_hit"]
+[connection signal="miss" from="Attack2" to="." method="_on_Attack_miss"]

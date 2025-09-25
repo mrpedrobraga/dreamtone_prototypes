@@ -1,6 +1,9 @@
 extends Control
 
-var indicator = preload('res://assets/ball.png')
+export var indicator_texture: Texture
+
+# -- The different attack types...
+#    in the game, only one of those will be implemented.
 
 enum AttackType {
 	HORIZONTAL_SLIDER,
@@ -9,64 +12,67 @@ enum AttackType {
 }
 export(AttackType) var attack_mode
 
+# -- the action associated with this target
+
+export var action = "B"
+export(float, 0.0, 1.0) var time_offset = 0.0
+
 signal hit
 signal miss
 
-var time_offset = 0
-var timer = 1
-var timer_max = 1
-var horizontal_offset = 0
-var vertical_offset = 0
+var time_since_beginning = 0 # time since start of this qte
+var timer = 1       # timer for the qte to end
+var timer_max = 1   # the value the timer gets reset to
 
+# The position of the indicator on screen.
+# Different attack types do different things with this.
+var indicator_position: Vector2 
+
+# When this is true, attacking will cause a hit!
+# Otherwise, it *may* miss.
 var hitting_window = false
 
 func _ready() -> void:
 	_begin()
 
+# Resets the attack
 func _begin():
-	time_offset = 0
+	time_since_beginning = 0
 	timer = timer_max
 	
 	if attack_mode == AttackType.SHRINKING_CIRCLE:
-		horizontal_offset = (randf() - 0.5) * rect_size.x
-		vertical_offset = (randf() - 0.5) * rect_size.y
+		indicator_position.x = (randf() - 0.5) * rect_size.x
+		indicator_position.y = (randf() - 0.5) * rect_size.y
 
 func _process(delta):
-	time_offset += delta
+	time_since_beginning += delta
 	timer -= delta
 	
-	if timer < 0:
-		if attack_mode == AttackType.SHRINKING_CIRCLE:
-			_attack()
-		_begin()
-	elif Input.is_action_just_pressed('OK'):
-		if _attack():
-			if attack_mode == AttackType.SHRINKING_CIRCLE:
-				_begin()
+	# You'll hit your attack if you do so when the indicator is inside the hitbox.
+	hitting_window = $Hitbox.get_rect().has_point(indicator_position)
 	
-	hitting_window = false
+	if attack_mode == AttackType.SHRINKING_CIRCLE:
+		# Auto attack when the shrinking circle reaches its target size.
+		if timer < 0 or Input.is_action_just_pressed(action):
+			_attack()
+			_begin()
+	# Otherwise, wait for input to attack.
+	elif Input.is_action_just_pressed(action):
+		_attack()
 	
 	#--- LINEAR ---#
 	match attack_mode:
 		AttackType.HORIZONTAL_SLIDER:
-			horizontal_offset = 32 * cos(time_offset * 5)
-			vertical_offset = 4 * sin(time_offset * 3) # This is just for fun
-			
-			if $Hitbox.get_rect().has_point(Vector2(horizontal_offset, vertical_offset)+rect_size/2):
-				hitting_window = true
+			var angle = 0
+			indicator_position = Vector2(32 * cos(time_since_beginning * 5 + time_offset * TAU), 4 * sin(time_since_beginning * 3)).rotated(angle)
+			indicator_position += rect_size / 2
 		AttackType.VERTICAL_SLIDER:
-			vertical_offset = 24 * cos(time_offset * 5)
-			horizontal_offset = 4 * sin(time_offset * 3) # This is just for fun
-			
-			if $Hitbox.get_rect().has_point(Vector2(horizontal_offset, vertical_offset)+rect_size/2):
-				hitting_window = true
+			var angle = TAU / 4
+			indicator_position = Vector2(32 * cos(time_since_beginning * 5 + time_offset * TAU), 4 * sin(time_since_beginning * 3)).rotated(angle)
+			indicator_position += rect_size / 2
 		AttackType.SHRINKING_CIRCLE:
 			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
-			horizontal_offset += vector.x
-			vertical_offset += vector.y
-			
-			if $Hitbox.get_rect().has_point(Vector2(horizontal_offset, vertical_offset)+rect_size/2):
-				hitting_window = true
+			indicator_position += vector
 	
 	update()
 
@@ -78,25 +84,20 @@ func _attack():
 			emit_signal('miss')
 			return false
 
-
 func _draw() -> void:
-	var center = rect_size/2
-	
-	var indicator_position = center +\
-		Vector2.RIGHT * horizontal_offset +\
-		Vector2.DOWN * vertical_offset
-	
 	_draw_indicator(
 		indicator_position
 	)
-	
-	if attack_mode == AttackType.SHRINKING_CIRCLE:
-		var radius = 32 * (timer_max - (time_offset - floor(time_offset)))
-		draw_arc(indicator_position, radius, 0, TAU, 64, Color.turquoise, 1.5)
 
 func _draw_indicator(where: Vector2):
-	var size = Vector2(16, 16)
-	var color = Color.white
+	var _indicator_size = Vector2(16, 16)
+	var _indicator_color = Color.white
+	
+	# Making sure to draw it centered!
 	if hitting_window:
-		color = Color.yellow
-	draw_texture_rect(indicator, Rect2(where - size / 2, size), false, color)
+		_indicator_color = Color.red
+	draw_texture_rect(indicator_texture,  Rect2(where - _indicator_size / 2, _indicator_size), false, _indicator_color)
+	
+	if attack_mode == AttackType.SHRINKING_CIRCLE:
+		var radius = 32 * (timer_max - (time_since_beginning - floor(time_since_beginning)))
+		draw_arc(where, radius, 0, TAU, 64, Color.turquoise, 1.5)
