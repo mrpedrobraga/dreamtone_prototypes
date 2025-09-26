@@ -23,7 +23,7 @@ signal miss
 
 var time_since_beginning = 0 # time since start of this qte
 var timer = 1       # timer for the qte to end
-var timer_max = 2   # the value the timer gets reset to
+var timer_max = 3   # the value the timer gets reset to
 
 # The position of the indicator on screen.
 # Different attack types do different things with this.
@@ -74,7 +74,7 @@ func _process(delta):
 			var speed = 2
 			indicator_position = Vector2(
 				24.0 * bidi_ease((time_since_beginning / timer_max) * TAU),
-				2 * sin(time_since_beginning * 8)
+				0.0
 			).rotated(0.25 * TAU)
 			indicator_position += rect_size / 2
 			
@@ -84,8 +84,8 @@ func _process(delta):
 	
 	update()
 
-func bidi_ease(x) -> float:
-	return cos(x)
+func bidi_ease(t: float) -> float:
+	return 2.0 - pow(t - 1.0, 2.0)
 
 func _process_hitbox_check():
 	hitting_window = false
@@ -112,10 +112,11 @@ func _draw_indicator(where: Vector2):
 	var _indicator_size = Vector2(16, 16)
 	var _indicator_color = Color.white
 	
-	_indicator_size *= (0.5 + 0.5 * abs(sin((time_since_beginning/timer_max)*TAU)))
+	_indicator_size *= clamp(4.0 * time_since_beginning / timer_max, 0.0, 1.0)
 	
 	if hitting_window:
-		_indicator_color = Color.purple
+		_indicator_color = Color.yellow
+		_indicator_size *= 1.2
 	
 	draw_texture_rect(indicator_texture,  Rect2(where - _indicator_size / 2, _indicator_size), false, _indicator_color)
 	

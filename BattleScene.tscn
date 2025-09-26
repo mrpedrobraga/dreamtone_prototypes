@@ -45,7 +45,6 @@ stream = ExtResource( 8 )
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 5 )
-autoplay = true
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 0.1
@@ -172,10 +171,10 @@ margin_bottom = 40.0
 
 [node name="AttackNathan" type="Control" parent="Attacks"]
 pause_mode = 1
-margin_left = 80.0
-margin_top = 26.0
-margin_right = 117.0
-margin_bottom = 49.0
+margin_left = 22.0
+margin_top = 27.0
+margin_right = 59.0
+margin_bottom = 50.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 10 )
 action = "A"
@@ -202,10 +201,10 @@ action = "A"
 
 [node name="AttackDarell" type="Control" parent="Attacks"]
 pause_mode = 1
-margin_left = 126.0
-margin_top = 24.0
-margin_right = 163.0
-margin_bottom = 54.0
+margin_left = 177.0
+margin_top = 23.0
+margin_right = 214.0
+margin_bottom = 53.0
 script = ExtResource( 3 )
 indicator_texture = ExtResource( 13 )
 action = "A"

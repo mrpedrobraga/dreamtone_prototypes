@@ -10,7 +10,7 @@ func _process(delta: float) -> void:
 func _spawn_all():
 	for attack_node_name in attacknodes:
 		var attack_node = get_node("Attacks/"+attack_node_name)
-		yield(get_tree().create_timer(0.2), "timeout")
+		yield(get_tree().create_timer(0.3), "timeout")
 		attack_node.start()
 
 func _on_Attack_hit() -> void:
