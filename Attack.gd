@@ -23,7 +23,7 @@ signal miss
 
 var time_since_beginning = 0 # time since start of this qte
 var timer = 1       # timer for the qte to end
-var timer_max = 1   # the value the timer gets reset to
+var timer_max = 2   # the value the timer gets reset to
 
 # The position of the indicator on screen.
 # Different attack types do different things with this.
@@ -64,23 +64,28 @@ func _process(delta):
 			var result = _attack()
 			if result:
 				stop()
+		elif timer < 0 or Input.is_action_just_pressed(action):
+			_attack()
+			stop()
 	
 	#--- LINEAR ---#
 	match attack_mode:
 		AttackType.HORIZONTAL_SLIDER:
 			var speed = 2
 			indicator_position = Vector2(
-				32.0 * (1.0 - time_since_beginning),
+				24.0 * bidi_ease((time_since_beginning / timer_max) * TAU),
 				2 * sin(time_since_beginning * 8)
-			)
+			).rotated(0.25 * TAU)
 			indicator_position += rect_size / 2
-			indicator_position = indicator_position
 			
 		AttackType.SHRINKING_CIRCLE:
 			var vector = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
 			indicator_position += vector
 	
 	update()
+
+func bidi_ease(x) -> float:
+	return cos(x)
 
 func _process_hitbox_check():
 	hitting_window = false
@@ -106,6 +111,11 @@ func _draw_indicator(where: Vector2):
 	
 	var _indicator_size = Vector2(16, 16)
 	var _indicator_color = Color.white
+	
+	_indicator_size *= (0.5 + 0.5 * abs(sin((time_since_beginning/timer_max)*TAU)))
+	
+	if hitting_window:
+		_indicator_color = Color.purple
 	
 	draw_texture_rect(indicator_texture,  Rect2(where - _indicator_size / 2, _indicator_size), false, _indicator_color)
 	
